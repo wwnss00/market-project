@@ -2,14 +2,14 @@ package com.example.marketproject.domain.entity;
 
 import com.example.marketproject.domain.common.BaseEntity;
 import jakarta.persistence.*;
-import lombok.AccessLevel;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
+import lombok.*;
 
 @Entity
 @Table(name = "profile_images")
 @Getter
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
+@AllArgsConstructor
+@Builder
 public class ProfileImage extends BaseEntity {
 
     @Id

@@ -2,9 +2,7 @@ package com.example.marketproject.domain.entity;
 
 import com.example.marketproject.domain.common.BaseEntity;
 import jakarta.persistence.*;
-import lombok.AccessLevel;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
+import lombok.*;
 
 @Entity
 @Table(name = "likes",
@@ -17,6 +15,8 @@ import lombok.NoArgsConstructor;
             )
 @Getter
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
+@AllArgsConstructor
+@Builder
 public class Like extends BaseEntity {
 
     @Id
@@ -31,7 +31,4 @@ public class Like extends BaseEntity {
     @JoinColumn(name = "user_id", nullable = false)
     private User user;
 
-
-
-    
 }
