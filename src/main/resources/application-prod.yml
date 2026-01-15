@@ -9,3 +9,7 @@ spring:
     hibernate:
       ddl-auto: update  # 배포 시에는 update 또는 validate
     database-platform: org.hibernate.dialect.MySQL8Dialect
+
+cookie:
+  secure: true   # HTTPS
+  max-age: 1209600 # 14일 (초)

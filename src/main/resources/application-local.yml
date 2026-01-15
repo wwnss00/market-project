@@ -14,3 +14,7 @@ spring:
     hibernate:
       ddl-auto: create  # 개발 시 매번 새로 생성
 
+cookie:
+  secure: false  # HTTP (localhost)
+  max-age: 1209600  # 14일 (초)
+
