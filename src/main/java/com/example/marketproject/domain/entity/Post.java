@@ -48,11 +48,23 @@ public class Post extends BaseEntity {
     private LocalDateTime deletedAt;
 
     //수정
-    public void update(String title, String content, Integer price, String location, PostStatus status) {
-        this.title = title;
-        this.content = content;
-        this.price = price;
-        this.location = location;
+    public void update(String title, String content, Integer price, String location) {
+        if (title != null) {
+            this.title = title;
+        }
+        if (content != null) {
+            this.content = content;
+        }
+        if (price != null) {
+            this.price = price;
+        }
+        if (location != null) {
+            this.location = location;
+        }
+    }
+
+    //상태 변경
+    public void changeStatus(PostStatus status) {
         this.status = status;
     }
 
@@ -69,6 +81,11 @@ public class Post extends BaseEntity {
     //소프트 삭제
     public void delete() {
         this.deletedAt = LocalDateTime.now();
+    }
+
+    //삭제 여부 확인
+    public boolean isDeleted() {
+        return this.deletedAt != null;
     }
 
 
