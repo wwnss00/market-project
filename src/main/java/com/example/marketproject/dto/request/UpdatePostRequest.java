@@ -15,18 +15,14 @@ import lombok.NoArgsConstructor;
 @Builder
 public class UpdatePostRequest {
 
-    @NotBlank(message = "제목을 입력해주세요")
-    @Size(max = 100)
+    @Size(max = 100, message = "제목은 100자 이하여야합니다.")
     private String title;
 
-    @NotBlank(message = "내용을 입력해주세요")
     private String content;
 
-    @NotNull(message = "가격을 입력해주세요")
     @Min(value = 0, message = "가격은 0원 이상이어야 합니다")
     private Integer price;
 
-    @NotBlank(message = "장소를 입력해주세요")
     @Size(max = 100)
     private String location;
 }
