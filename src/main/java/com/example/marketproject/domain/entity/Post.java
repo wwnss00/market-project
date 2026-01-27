@@ -78,5 +78,10 @@ public class Post extends BaseEntity {
         this.deletedAt = LocalDateTime.now();
     }
 
+    //삭제 여부 확인
+    public boolean isDeleted() {
+        return this.deletedAt != null;
+    }
+
 
 }
