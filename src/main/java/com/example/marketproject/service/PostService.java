@@ -9,10 +9,12 @@ import com.example.marketproject.dto.response.PostListResponse;
 import com.example.marketproject.dto.response.PostResponse;
 import com.example.marketproject.exception.PostNotFoundException;
 import com.example.marketproject.exception.UnauthorizedException;
+import com.example.marketproject.exception.UserNotFoundException;
 import com.example.marketproject.repository.PostRepository;
 import com.example.marketproject.repository.UserRepository;
 import jakarta.persistence.Table;
 import lombok.RequiredArgsConstructor;
+import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -31,7 +33,7 @@ public class PostService {
     @Transactional
     public PostResponse createPost(CreatePostRequest request, Long userId) {
         User user = userRepository.findById(userId)
-                .orElseThrow(() -> new RuntimeException("사용자를 찾을 수 없습니다."));
+                .orElseThrow(() -> new UserNotFoundException("사용자를 찾을 수 없습니다."));
 
         Post post = Post.builder()
                 .title(request.getTitle())
@@ -73,6 +75,10 @@ public class PostService {
         Post post = postRepository.findById(postId)
                 .orElseThrow(() ->new PostNotFoundException("게시글을 찾을 수 없습니다."));
 
+        if (post.isDeleted()) {
+            throw new IllegalStateException("삭제된 게시글은 수정할 수 없습니다.");
+        }
+
         if(!post.isWriter(userId)) {
             throw new UnauthorizedException("게시글 수정 권한이 없습니다.");
         }
@@ -91,6 +97,11 @@ public class PostService {
     public PostResponse changeStatus(Long postId, ChangeStatusRequest request, Long userId) {
         Post post = postRepository.findById(postId)
                 .orElseThrow(() -> new PostNotFoundException("게시글을 찾을 수 없습니다."));
+
+        // 삭제 체크 추가!
+        if (post.isDeleted()) {
+            throw new IllegalStateException("삭제된 게시글의 상태를 변경할 수 없습니다.");
+        }
 
         if(!post.isWriter(userId)) {
             throw new UnauthorizedException("상태 변경 권한이 없습니다.");
