@@ -4,6 +4,8 @@ import io.jsonwebtoken.*;
 import io.jsonwebtoken.security.Keys;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Component;
 
 import java.security.Key;
@@ -100,24 +102,40 @@ public class JwtTokenProvider {
         return false;
     }
 
-    /**
-     * 토큰에서 사용자 ID 추출
-     * @param token JWT 토큰
-     * @return 사용자 ID
-     */
-    public Long getUserId(String token) {
-        Claims claims = parseClaims(token);
-        return Long.parseLong(claims.getSubject());
-    }
+//    /**
+//     * 토큰에서 사용자 ID 추출
+//     * @param token JWT 토큰
+//     * @return 사용자 ID
+//     */
+//    public Long getUserId(String token) {
+//        Claims claims = parseClaims(token);
+//        return Long.parseLong(claims.getSubject());
+//    }
+//
+//    /**
+//     * 토큰에서 권한 추출
+//     * @param token JWT 토큰
+//     * @return 권한 (예: "USER", "ADMIN")
+//     */
+//    public String getRole(String token) {
+//        Claims claims = parseClaims(token);
+//        return claims.get("role", String.class);
+//    }
 
-    /**
-     * 토큰에서 권한 추출
-     * @param token JWT 토큰
-     * @return 권한 (예: "USER", "ADMIN")
-     */
-    public String getRole(String token) {
+    public Authentication getAuthentication(String token) {
         Claims claims = parseClaims(token);
-        return claims.get("role", String.class);
+
+        Long userId = claims.get("userId", Long.class);
+        String loginId = claims.getSubject();  // ← loginId
+        String role = claims.get("role", String.class);
+
+        CustomUserDetails userDetails = new CustomUserDetails(userId, loginId, role);
+
+        return new UsernamePasswordAuthenticationToken(
+                userDetails,
+                null,
+                userDetails.getAuthorities()  // CustomUserDetails가 제공
+        );
     }
 
     /**
