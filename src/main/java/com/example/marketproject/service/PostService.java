@@ -61,6 +61,7 @@ public class PostService {
     }
 
     //게시글 목록 조회
+    @Transactional
     public List<PostListResponse> getAllPosts() {
         return postRepository.findAll()
                 .stream()
