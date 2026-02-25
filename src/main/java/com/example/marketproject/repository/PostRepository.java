@@ -1,6 +1,9 @@
 package com.example.marketproject.repository;
 
 import com.example.marketproject.domain.entity.Post;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.jpa.repository.EntityGraph;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 
@@ -8,10 +11,10 @@ import java.util.List;
 
 public interface PostRepository extends JpaRepository<Post, Long> {
 
+    @EntityGraph(attributePaths = {"user"})
     @Query("SELECT p FROM Post p " +
-            "JOIN FETCH p.user " +
             "WHERE p.deletedAt IS NULL " +
             "ORDER BY p.createdAt DESC")
-    List<Post> findAllNotDeletedWithUser();
+    Page<Post> findAllNotDeletedWithUser(Pageable pageable);
 
 }

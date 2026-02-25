@@ -9,6 +9,10 @@ import com.example.marketproject.security.CustomUserDetails;
 import com.example.marketproject.service.PostService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
+import org.springframework.data.web.PageableDefault;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
@@ -37,17 +41,14 @@ public class PostController {
 
     // 2.게시글 목록 조회
     @GetMapping
-    public ResponseEntity<List<PostListResponse>> getAllposts() {
-        long startTime = System.currentTimeMillis();  // 시작
+    public ResponseEntity<Page<PostListResponse>> getAllposts(
+            @PageableDefault(
+                    size = 10,                                      //기본 10개
+                    sort = "createdAt",                              //정렬 기준
+                    direction = Sort.Direction.DESC                 //내림차순
+            ) Pageable pageable) {
 
-        List<PostListResponse> posts = postService.getAllPosts();
-
-        long endTime = System.currentTimeMillis();  // 종료
-        long duration = endTime - startTime;
-
-        System.out.println("실행 시간: " + duration + "ms");
-        System.out.println("게시글 수: " + posts.size());
-
+        Page<PostListResponse> posts = postService.getAllPosts(pageable);
         return ResponseEntity.ok(posts);
     }
 

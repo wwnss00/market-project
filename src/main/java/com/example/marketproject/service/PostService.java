@@ -14,6 +14,8 @@ import com.example.marketproject.repository.PostRepository;
 import com.example.marketproject.repository.UserRepository;
 import jakarta.persistence.Table;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -62,12 +64,10 @@ public class PostService {
 
     //게시글 목록 조회
     @Transactional
-    public List<PostListResponse> getAllPosts() {
-        return postRepository.findAllNotDeletedWithUser()
-                .stream()
-                .filter(post -> !post.isDeleted()) //삭제 안 된 것만
-                .map(PostListResponse::from)
-                .collect(Collectors.toList());
+    public Page<PostListResponse> getAllPosts(Pageable pageable) {
+        return postRepository.findAllNotDeletedWithUser(pageable)
+                .map(PostListResponse::from);
+
     }
 
     //게시글 수정
