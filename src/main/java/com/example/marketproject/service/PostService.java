@@ -1,6 +1,7 @@
 package com.example.marketproject.service;
 
 import com.example.marketproject.domain.entity.Post;
+import com.example.marketproject.domain.entity.PostStatus;
 import com.example.marketproject.domain.entity.User;
 import com.example.marketproject.dto.request.ChangeStatusRequest;
 import com.example.marketproject.dto.request.CreatePostRequest;
@@ -126,5 +127,19 @@ public class PostService {
         }
 
         post.delete();
+    }
+
+    // 검색
+    public Page<PostListResponse> searchPosts(
+            String keyword,
+            Integer minPrice,
+            Integer maxPrice,
+            String location,
+            PostStatus status,
+            Pageable pageable) {
+
+        return postRepository.searchPosts(
+                keyword, minPrice, maxPrice, location, status, pageable
+        ).map(PostListResponse::from);
     }
 }

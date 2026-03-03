@@ -1,5 +1,6 @@
 package com.example.marketproject.controller;
 
+import com.example.marketproject.domain.entity.PostStatus;
 import com.example.marketproject.dto.request.ChangeStatusRequest;
 import com.example.marketproject.dto.request.CreatePostRequest;
 import com.example.marketproject.dto.request.UpdatePostRequest;
@@ -92,5 +93,23 @@ public class PostController {
         postService.deletePost(id, userDetails.getUserId());
 
         return ResponseEntity.noContent().build();
+    }
+
+    // 7.검색
+    @GetMapping("/search")
+    public ResponseEntity<Page<PostListResponse>> searchPosts(
+            @RequestParam(required = false) String keyword,
+            @RequestParam(required = false) Integer minPrice,
+            @RequestParam(required = false) Integer maxPrice,
+            @RequestParam(required = false) String location,
+            @RequestParam(required = false) PostStatus status,
+            @PageableDefault(size = 10, sort = "createdAt", direction = Sort.Direction.DESC)
+            Pageable pageable) {
+
+        Page<PostListResponse> posts = postService.searchPosts(
+                keyword, minPrice, maxPrice, location, status, pageable
+        );
+
+        return ResponseEntity.ok(posts);
     }
 }
