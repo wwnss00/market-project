@@ -122,4 +122,10 @@ public class GlobalExceptionHandler {
         return ResponseEntity.status(HttpStatus.NOT_FOUND).body(response); //404
     }
 
+    @ExceptionHandler(WishlistNotFoundException.class)
+    public ResponseEntity<ErrorResponse> handleWishlistNotFound(WishlistNotFoundException e) {
+        return ResponseEntity.status(HttpStatus.NOT_FOUND)
+                .body(new ErrorResponse(e.getMessage()));
+    }
+
 }
