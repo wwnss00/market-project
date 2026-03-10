@@ -8,8 +8,6 @@ import lombok.*;
 @Table(name = "profile_images")
 @Getter
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
-@AllArgsConstructor
-@Builder
 public class ProfileImage extends BaseEntity {
 
     @Id
@@ -20,6 +18,28 @@ public class ProfileImage extends BaseEntity {
     @JoinColumn(name = "user_id", nullable = false, unique = true)
     private User user;
 
-    @Column(length = 255, nullable = false)
-    private String url;
+    @Column(nullable = false)
+    private String originalFilename;  // 원본
+
+    @Column(nullable = false)
+    private String storedFilename;    // 저장명
+
+    @Column(nullable = false)
+    private String filePath;          // 경로
+
+    private Long fileSize;
+
+    @Builder
+    public ProfileImage(User user, String originalFilename,
+                        String storedFilename, String filePath, Long fileSize) {
+        this.user = user;
+        this.originalFilename = originalFilename;
+        this.storedFilename = storedFilename;
+        this.filePath = filePath;
+        this.fileSize = fileSize;
+    }
+
+    public String getImageUrl() {
+        return filePath + storedFilename;
+    }
 }

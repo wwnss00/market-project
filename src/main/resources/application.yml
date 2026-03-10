@@ -4,6 +4,11 @@ spring:
   profiles:
     active: local  # ??? local(H2) ??
     include: secret  # JWT 설정 로드
+  servlet:
+    multipart:
+      enabled: true
+      max-file-size: 10MB        # 파일 하나 최대 10MB
+      max-request-size: 50MB     # 전체 요청 최대 50MB
 
   jpa:
     hibernate:
@@ -17,3 +22,8 @@ logging:
   level:
     org.hibernate.SQL: debug
     org.hibernate.type.descriptor.sql.BasicBinder: trace
+
+# 파일 업로드 설정
+file:
+  upload-dir: ${user.home}/uploads/images/
+
