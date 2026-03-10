@@ -9,8 +9,6 @@ import org.hibernate.annotations.ColumnDefault;
 @Table(name = "post_images")
 @Getter
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
-@AllArgsConstructor
-@Builder
 public class PostImage extends BaseEntity {
 
     @Id
@@ -21,16 +19,44 @@ public class PostImage extends BaseEntity {
     @JoinColumn(name = "post_id", nullable = false)
     private Post post;
 
-    @Column(length = 255, nullable = false)
-    private String url;
+    // 파일 메타데이터 (상세)
+    @Column(nullable = false)
+    private String originalFilename;
 
+    @Column(nullable = false)
+    private String storedFilename;
+
+    @Column(nullable = false)
+    private String filePath;
+
+    private Long fileSize;
+
+    // 사진 순서
     @Column(name = "image_order", nullable = false)
-    @Builder.Default
-    private Integer imageOrder = 1;
+    private Integer imageOrder;
 
+    // 썸네일 여부
     @Column(name = "is_thumnail", nullable = false)
-    @Builder.Default
-    private Boolean isThumbnail = false;
+    private Boolean isThumbnail;
+
+    @Builder
+    public PostImage(Post post, String originalFilename, String storedFilename,
+                     String filePath, Long fileSize, Integer imageOrder, Boolean isThumbnail) {
+        this.post = post;
+        this.originalFilename = originalFilename;
+        this.storedFilename = storedFilename;
+        this.filePath = filePath;
+        this.fileSize = fileSize;
+        this.imageOrder = imageOrder;
+        this.isThumbnail = isThumbnail != null ? isThumbnail : false;
+    }
+
+    // 전체 URL 생성 (로컬/S3 대응)
+    public String getImageUrl() {
+        // 로컬: /uploads/images/UUID_아이폰.jpg
+        // S3: https://s3.../UUID_아이폰.jpg
+        return filePath + storedFilename;
+    }
 
 
 }
