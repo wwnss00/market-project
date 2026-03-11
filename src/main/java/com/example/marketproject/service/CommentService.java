@@ -45,21 +45,38 @@ public class CommentService {
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new UserNotFoundException("사용자를 찾을 수 없습니다."));
 
-        // 4.댓글 생성
+        // 4.대댓글이면 부모 댓글 조회
+        Comment parent = null;
+        if (request.getParentId() != null) {
+            parent = commentRepository.findById(request.getParentId())
+                    .orElseThrow(() -> new CommentNotFoundException("부모 댓글을 찾을 수 없습니다"));
+
+            if (parent.isDeleted()) {
+                throw new IllegalStateException("삭제된 댓글에는 답글을 작성할 수 없습니다");
+            }
+
+            // 대댓글에 대댓글 방지 (2depth만 허용)
+            if (parent.isReply()) {
+                throw new IllegalStateException("대댓글에는 답글을 작성할 수 없습니다");
+            }
+        }
+
+        // 5.댓글 생성
         Comment comment = Comment.builder()
                 .post(post)
                 .user(user)
                 .content(request.getContent())
+                .parent(parent)
                 .build();
 
-        // 5.저장
+        // 6.저장
         Comment savedComment = commentRepository.save(comment);
         return CommentResponse.from(savedComment);
     }
 
     // 댓글 목록 조회 (게시글별)
     public List<CommentResponse> getComments(Long postId) {
-        return commentRepository.findByPostIdWithUser(postId)
+        return commentRepository.findTopLevelCommentsByPostId(postId)
                 .stream()
                 .map(CommentResponse::from)
                 .collect(Collectors.toList());
