@@ -44,7 +44,9 @@ public class SecurityConfig {
                                 "/login/oauth2/**",            // (구글 리다이렉트 URI)
                                 "/oauth2/**",                // (OAuth2 시작 URI)
                                 "/api/auth/find-loginid/**",
-                                "/api/auth/reset-password/**"
+                                "/api/auth/reset-password/**",
+                                "/ws/chat/**",
+                                "/chat-test.html"
                         ).permitAll()
 
                         // H2 콘솔 접근 허용 (개발 편의)
