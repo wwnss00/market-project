@@ -26,7 +26,7 @@ public class PostListResponse {
         String thumbnailUrl = post.getImages().stream()
                 .filter(img -> img.getIsThumbnail())
                 .findFirst()
-                .map(img -> img.getFilePath())  // S3 전체 URL 사용
+                .map(img -> img.getFilePath())
                 .orElse(null);
 
         return PostListResponse.builder()
@@ -37,7 +37,7 @@ public class PostListResponse {
                 .status(post.getStatus())
                 .viewCount(post.getViewCount())
                 .writerNickname(post.getUser().getNickname())
-                .thumbnailUrl(thumbnailUrl)  // 추가!
+                .thumbnailUrl(thumbnailUrl)
                 .createdAt(post.getCreatedAt())
                 .build();
     }
