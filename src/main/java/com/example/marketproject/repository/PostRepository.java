@@ -13,13 +13,13 @@ import java.util.List;
 
 public interface PostRepository extends JpaRepository<Post, Long> {
 
-    @EntityGraph(attributePaths = {"user"})
+    @EntityGraph(attributePaths = {"user", "images"})
     @Query("SELECT p FROM Post p " +
             "WHERE p.deletedAt IS NULL " +
             "ORDER BY p.createdAt DESC")
     Page<Post> findAllNotDeletedWithUser(Pageable pageable);
 
-    @EntityGraph(attributePaths = {"user"})
+    @EntityGraph(attributePaths = {"user","images"})
     @Query("SELECT p FROM Post p " +
             "WHERE p.deletedAt IS NULL " +
             "AND (:keyword IS NULL OR p.title LIKE %:keyword% OR p.content LIKE %:keyword%) " +
