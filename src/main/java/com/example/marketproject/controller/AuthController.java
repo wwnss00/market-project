@@ -17,6 +17,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import com.example.marketproject.exception.AuthenticationFailedException;
 
 import java.util.Map;
 
@@ -91,12 +92,12 @@ public class AuthController {
     ) {
             // Refresh Token 확인
             if (refreshToken == null) {
-                throw new IllegalArgumentException("Refresh Token이 없습니다");
+                throw new AuthenticationFailedException("Refresh Token이 없습니다");
             }
 
             // Refresh Token 검증
             if (!jwtTokenProvider.validateToken(refreshToken)) {
-                throw new IllegalArgumentException("유효하지 않은 Refresh Token입니다");
+                throw new AuthenticationFailedException("유효하지 않은 Refresh Token입니다");
             }
 
             // userId 추출
@@ -105,11 +106,16 @@ public class AuthController {
             // Redis에 저장된 토큰과 비교
             String savedToken = authService.getRefreshToken(userId);
             if (savedToken == null || !savedToken.equals(refreshToken)) {
-                throw new IllegalArgumentException("유효하지 않은 Refresh Token입니다");
+                throw new AuthenticationFailedException("유효하지 않은 Refresh Token입니다");
             }
 
             // DB에서 사용자 조회 (최신 정보)
             User user = authService.getUserById(userId);
+
+            // 탈퇴한 회원은 재발급 거부
+            if (user.isDeleted()) {
+                throw new AuthenticationFailedException("탈퇴한 회원입니다.");
+            }
 
             // 새 Access Token 발급
             String newAccessToken = jwtTokenProvider.createAccessToken(
