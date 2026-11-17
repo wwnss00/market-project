@@ -13,6 +13,9 @@ import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
+import org.springframework.http.HttpMethod;
+import org.springframework.http.HttpStatus;
+import org.springframework.security.web.authentication.HttpStatusEntryPoint;
 
 @Configuration
 @EnableWebSecurity
@@ -36,6 +39,15 @@ public class SecurityConfig {
 
                 // URL별 권한 설정
                 .authorizeHttpRequests(auth -> auth
+                        // 내 게시글 조회는 로그인 필요 (아래 {id} 규칙보다 먼저 써야 함)
+                        .requestMatchers("/api/posts/my").authenticated()
+
+                        // 게시글·댓글은 조회(GET)만 비로그인 허용
+                        .requestMatchers(HttpMethod.GET,
+                                "/api/posts",
+                                "/api/posts/{id}",
+                                "/api/posts/{id}/comments"
+                        ).permitAll()
                         // 인증 없이 접근 가능
                         .requestMatchers(
                                 //  원래부터 열어둔 경로 (변경 없음)
@@ -48,9 +60,6 @@ public class SecurityConfig {
                                 "/api/auth/reset-password/**",
                                 "/ws/chat/**",
                                 "/chat-test.html",
-                                "/api/posts",
-                                "/api/posts/{id}",
-                                "/api/posts/{id}/comments",
                                 "/api/auth/check-loginid",
 
 
@@ -84,6 +93,14 @@ public class SecurityConfig {
                 // H2 콘솔 사용을 위한 설정
                 .headers(headers -> headers
                         .frameOptions(frame -> frame.sameOrigin())
+                )
+
+                // API 요청은 비로그인 시 로그인 페이지 이동 대신 401 응답
+                .exceptionHandling(ex -> ex
+                        .defaultAuthenticationEntryPointFor(
+                                new HttpStatusEntryPoint(HttpStatus.UNAUTHORIZED),
+                                request -> request.getRequestURI().startsWith("/api/")
+                        )
                 )
 
                 // OAuth2 로그인 설정 추가
