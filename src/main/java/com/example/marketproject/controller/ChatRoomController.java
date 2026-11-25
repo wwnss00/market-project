@@ -47,6 +47,6 @@ public class ChatRoomController {
             @PathVariable Long roomId,
             @AuthenticationPrincipal CustomUserDetails userDetails) {
 
-        return ResponseEntity.ok(chatMessageService.getMessages(roomId));
+        return ResponseEntity.ok(chatMessageService.getMessages(roomId, userDetails.getUserId()));
     }
 }
