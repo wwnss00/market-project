@@ -42,7 +42,7 @@ public class PostService {
     private S3Service s3Service;
 
     //게시글 작성
-    @Transactional
+    @Transactional (rollbackFor = Exception.class)
     public PostResponse createPost(CreatePostRequest request,List<MultipartFile> images,Long userId)
     throws IOException {
 

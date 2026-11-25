@@ -99,6 +99,9 @@ public class UserService {
                 TimeUnit.MILLISECONDS
         );
 
+        // Refresh Token 삭제 (탈퇴 후 토큰 재발급 차단)
+        redisTemplate.delete("refreshToken:" + userId);
+
         user.withdraw();
     }
 }

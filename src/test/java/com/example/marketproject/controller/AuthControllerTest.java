@@ -17,6 +17,7 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.context.annotation.Bean;
 import org.springframework.http.MediaType;
 import org.springframework.test.context.ActiveProfiles;
+import org.springframework.test.context.TestPropertySource;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -25,10 +26,17 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
+import jakarta.servlet.http.Cookie;
+import org.springframework.test.web.servlet.MvcResult;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
+
+import org.springframework.test.context.TestPropertySource;
+
 @SpringBootTest
 @AutoConfigureMockMvc
 @Transactional
 @ActiveProfiles("local")
+@TestPropertySource(properties = "spring.sql.init.mode=never")
 public class AuthControllerTest {
 
     @Autowired
@@ -55,7 +63,7 @@ public class AuthControllerTest {
                 .loginId("jkl2085")
                 .password("!wanns2085")
                 .nickname("준준준")
-                .phone("010-2295-4328")
+                .phone("01022954328")
                 .build();
 
         //when
@@ -77,7 +85,7 @@ public class AuthControllerTest {
         assertThat(savedUser.getLoginId()).isEqualTo("jkl2085");
         assertThat(savedUser.getPassword()).isNotEqualTo("!wanns2085");
         assertThat(savedUser.getNickname()).isEqualTo("준준준");
-        assertThat(savedUser.getPhone()).isEqualTo("010-2295-4328");
+        assertThat(savedUser.getPhone()).isEqualTo("01022954328");
     }
 
     @Test
@@ -91,7 +99,7 @@ public class AuthControllerTest {
                 .loginId("jkl2085")
                 .password("!wanns2085")
                 .nickname("준준준")
-                .phone("010-2295-4328")
+                .phone("01022954328")
                 .build();
 
         mockMvc.perform(post("/api/auth/signup")
@@ -106,7 +114,7 @@ public class AuthControllerTest {
                 .loginId("jka2085")
                 .password("!wenns2085")
                 .nickname("준쥰준")
-                .phone("010-2225-4328")
+                .phone("01022254328")
                 .build();
 
         //then
@@ -129,7 +137,7 @@ public class AuthControllerTest {
                 .loginId("jkl2085")
                 .password("!wanns2085")
                 .nickname("준준준")
-                .phone("010-2295-4328")
+                .phone("01022954328")
                 .build();
 
         mockMvc.perform(post("/api/auth/signup")
@@ -144,7 +152,7 @@ public class AuthControllerTest {
                 .loginId("jkl2085")
                 .password("!wenns2085")
                 .nickname("준쥰준")
-                .phone("010-2225-4328")
+                .phone("01022254328")
                 .build();
 
         //then
@@ -167,7 +175,7 @@ public class AuthControllerTest {
                 .loginId("jkl2085")
                 .password("!wanns2085")
                 .nickname("준준준")
-                .phone("010-2295-4328")
+                .phone("01022954328")
                 .build();
 
         mockMvc.perform(post("/api/auth/signup")
@@ -202,7 +210,7 @@ public class AuthControllerTest {
                 .loginId("jkl2085")
                 .password("!wanns2085")
                 .nickname("준준준")
-                .phone("010-2295-4328")
+                .phone("01022954328")
                 .build();
 
         mockMvc.perform(post("/api/auth/signup")
@@ -220,6 +228,52 @@ public class AuthControllerTest {
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(objectMapper.writeValueAsString(loginRequest)))
                 .andExpect(status().isUnauthorized()) // 401
+                .andDo(print());
+    }
+
+    @Test
+    @DisplayName("탈퇴 후 남은 Refresh Token으로 재발급 시도하면 401")
+    void 탈퇴_후_토큰_재발급_실패() throws Exception {
+        // given: 회원가입
+        SignupRequest signupRequest = new SignupRequest().builder()
+                .name("김준성")
+                .email("jkl2085@naver.com")
+                .loginId("jkl2085")
+                .password("!wanns2085")
+                .nickname("준준준")
+                .phone("01022954328")
+                .build();
+
+        mockMvc.perform(post("/api/auth/signup")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(objectMapper.writeValueAsString(signupRequest)));
+
+        // given: 로그인해서 Access Token과 Refresh Token 쿠키 받기
+        LoginRequest loginRequest = LoginRequest.builder()
+                .loginId("jkl2085")
+                .password("!wanns2085")
+                .build();
+
+        MvcResult loginResult = mockMvc.perform(post("/api/auth/login")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(loginRequest)))
+                .andExpect(status().isOk())
+                .andReturn();
+
+        String accessToken = objectMapper
+                .readTree(loginResult.getResponse().getContentAsString())
+                .get("accessToken").asText();
+        Cookie refreshCookie = loginResult.getResponse().getCookie("refreshToken");
+
+        // when: 회원 탈퇴
+        mockMvc.perform(delete("/api/users/me")
+                        .header("Authorization", "Bearer " + accessToken))
+                .andExpect(status().isNoContent());
+
+        // then: 남아 있던 Refresh Token으로 재발급 시도 → 401
+        mockMvc.perform(post("/api/auth/refresh")
+                        .cookie(refreshCookie))
+                .andExpect(status().isUnauthorized())
                 .andDo(print());
     }
 }
