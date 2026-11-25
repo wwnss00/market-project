@@ -4,6 +4,7 @@ import com.example.marketproject.domain.entity.ChatMessage;
 import com.example.marketproject.domain.entity.ChatRoom;
 import com.example.marketproject.domain.entity.User;
 import com.example.marketproject.dto.response.ChatMessageResponse;
+import com.example.marketproject.exception.UnauthorizedException;
 import com.example.marketproject.repository.ChatMessageRepository;
 import com.example.marketproject.repository.ChatRoomRepository;
 import com.example.marketproject.repository.UserRepository;
@@ -56,7 +57,15 @@ public class ChatMessageService {
     }
 
     // 이전 메시지 조회 (Redis 우선, 없으면 MySQL)
-    public List<ChatMessageResponse> getMessages(Long roomId) {
+    public List<ChatMessageResponse> getMessages(Long roomId, Long userId) {
+        ChatRoom chatRoom = chatRoomRepository.findById(roomId)
+                .orElseThrow(() -> new IllegalArgumentException("채팅방을 찾을 수 없습니다"));
+
+        // 채팅방 참여자(구매자 or 판매자)만 조회 가능
+        if (!chatRoom.getBuyer().getId().equals(userId) &&
+                !chatRoom.getSeller().getId().equals(userId)) {
+            throw new UnauthorizedException("채팅방을 조회할 권한이 없습니다");
+        }
         String key = CHAT_MESSAGES_KEY + roomId;
         List<String> cached = redisTemplate.opsForList().range(key, 0, -1);
 
